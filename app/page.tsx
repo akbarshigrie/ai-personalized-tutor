@@ -4,9 +4,9 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="max-w-6xl mx-auto px-6 py-24 text-center">
+      <section className="max-w-6xl mx-auto px-8 py-26 text-center">
         <div className="inline-block bg-gray-200 px-4 py-2 rounded-full text-sm mb-6">
-          🤖 AI Powered Learning
+          AI Powered Learning
         </div>
 
         <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900">

@@ -1,82 +1,90 @@
-import openai from "@/lib/openai";
+import { NextRequest, NextResponse } from "next/server";
+
+import {
+  getTutorResponse,
+} from "@/lib/openai";
 
 interface LessonPlanRequest {
-  completedLessons: string[];
-  quizScores: Record<
-    string,
-    number
-  >;
-  weakAreas: string[];
-  availableLessons: unknown[];
+  completedLessons?: string[];
+  weakAreas?: string[];
+  quizScores?: Record<string, number>;
+  currentProgress?: number;
 }
 
 export async function POST(
-  request: Request
+  request: NextRequest
 ) {
   try {
     const body =
       (await request.json()) as LessonPlanRequest;
 
-    const {
-      completedLessons,
-      quizScores,
-      weakAreas,
-      availableLessons,
-    } = body;
+    const completedLessons =
+      body.completedLessons || [];
+
+    const weakAreas =
+      body.weakAreas || [];
+
+    const quizScores =
+      body.quizScores || {};
+
+    const currentProgress =
+      body.currentProgress ?? 0;
 
     const prompt = `
-You are a personalized learning planner
-for Internee.pk interns.
+Create a personalized learning plan for a learner.
+
+Current progress:
+${currentProgress}%
 
 Completed lessons:
-${JSON.stringify(
-  completedLessons
-)}
-
-Quiz scores:
-${JSON.stringify(
-  quizScores
-)}
+${
+  completedLessons.length
+    ? completedLessons.join(", ")
+    : "None"
+}
 
 Weak areas:
-${JSON.stringify(
-  weakAreas
-)}
+${
+  weakAreas.length
+    ? weakAreas.join(", ")
+    : "None identified"
+}
 
-Available lessons:
-${JSON.stringify(
-  availableLessons
-)}
+Quiz scores:
+${
+  Object.keys(quizScores).length
+    ? JSON.stringify(quizScores)
+    : "No quiz scores available"
+}
 
-Create a personalized learning plan.
+Create a practical learning plan.
 
-Return:
+Include:
+1. Priority topics
+2. Recommended lessons
+3. Practice activities
+4. Suggested order
+5. Short-term learning goals
 
-1. Current learning level
-2. Main weak areas
-3. Recommended next lesson
-4. Why this lesson is recommended
-5. Three practical next steps
-
-Keep the response concise and practical.
+Keep the plan clear, practical, and suitable for the learner's current level.
 `;
 
-    const response =
-      await openai.responses.create({
-        model: "gpt-5",
-        input: prompt,
-      });
+    const plan =
+      await getTutorResponse(prompt);
 
-    return Response.json({
-      plan: response.output_text,
+    return NextResponse.json({
+      plan,
     });
   } catch (error) {
-    console.error(error);
+    console.error(
+      "Lesson plan API error:",
+      error
+    );
 
-    return Response.json(
+    return NextResponse.json(
       {
         error:
-          "Unable to generate lesson plan.",
+          "Unable to generate a lesson plan. Please try again.",
       },
       {
         status: 500,

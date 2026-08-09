@@ -2,18 +2,24 @@ import {
   arrayUnion,
   doc,
   getDoc,
-  updateDoc,
+  setDoc,
 } from "firebase/firestore";
 
-import {
-  db,
-} from "@/lib/firebase";
+import { db } from "@/lib/firebase";
+
+export interface UserProgress {
+  completedLessons?: string[];
+  quizScores?: Record<string, number>;
+}
 
 export async function getUserProgress(
   userId: string
-) {
-  const userRef =
-    doc(db, "users", userId);
+): Promise<UserProgress | null> {
+  const userRef = doc(
+    db,
+    "users",
+    userId
+  );
 
   const snapshot =
     await getDoc(userRef);
@@ -22,32 +28,51 @@ export async function getUserProgress(
     return null;
   }
 
-  return snapshot.data();
+  return snapshot.data() as UserProgress;
 }
 
 export async function completeLesson(
   userId: string,
   lessonId: string
-) {
-  const userRef =
-    doc(db, "users", userId);
+): Promise<void> {
+  const userRef = doc(
+    db,
+    "users",
+    userId
+  );
 
-  await updateDoc(userRef, {
-    completedLessons:
-      arrayUnion(lessonId),
-  });
+  await setDoc(
+    userRef,
+    {
+      completedLessons:
+        arrayUnion(lessonId),
+    },
+    {
+      merge: true,
+    }
+  );
 }
 
 export async function saveQuizScore(
   userId: string,
   lessonId: string,
   score: number
-) {
-  const userRef =
-    doc(db, "users", userId);
+): Promise<void> {
+  const userRef = doc(
+    db,
+    "users",
+    userId
+  );
 
-  await updateDoc(userRef, {
-    [`quizScores.${lessonId}`]:
-      score,
-  });
+  await setDoc(
+    userRef,
+    {
+      quizScores: {
+        [lessonId]: score,
+      },
+    },
+    {
+      merge: true,
+    }
+  );
 }

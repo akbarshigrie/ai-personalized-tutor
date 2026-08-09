@@ -1,12 +1,10 @@
 "use client";
 
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
-import {
-  QuizQuestion,
-} from "@/data/quizzes";
+import { QuizQuestion } from "@/data/quizzes";
+import useAuth from "@/hooks/useAuth";
+import { saveQuizScore } from "@/services/progressServices";
 
 interface QuizProps {
   questions: QuizQuestion[];
@@ -15,17 +13,25 @@ interface QuizProps {
 export default function Quiz({
   questions,
 }: QuizProps) {
+  const { user } = useAuth();
+
   const [currentIndex, setCurrentIndex] =
-    useState<number>(0);
+    useState(0);
 
   const [score, setScore] =
-    useState<number>(0);
+    useState(0);
 
   const [selected, setSelected] =
-    useState<string>("");
+    useState("");
 
   const [finished, setFinished] =
-    useState<boolean>(false);
+    useState(false);
+
+  const [saving, setSaving] =
+    useState(false);
+
+  const [saveError, setSaveError] =
+    useState("");
 
   if (questions.length === 0) {
     return (
@@ -35,22 +41,20 @@ export default function Quiz({
     );
   }
 
-  function submitAnswer() {
-    if (!selected) {
+  const currentQuestion =
+    questions[currentIndex];
+
+  async function submitAnswer() {
+    if (!selected || saving) {
       return;
     }
 
-    const currentQuestion =
-      questions[currentIndex];
-
     const isCorrect =
-      selected ===
-      currentQuestion.answer;
+      selected === currentQuestion.answer;
 
-    const newScore =
-      isCorrect
-        ? score + 1
-        : score;
+    const newScore = isCorrect
+      ? score + 1
+      : score;
 
     if (
       currentIndex + 1 <
@@ -61,23 +65,52 @@ export default function Quiz({
       }
 
       setCurrentIndex(
-        (previous) =>
-          previous + 1
+        (previous) => previous + 1
       );
 
       setSelected("");
-    } else {
-      setScore(newScore);
+
+      return;
+    }
+
+    setScore(newScore);
+    setSaving(true);
+    setSaveError("");
+
+    const percentage = Math.round(
+      (newScore / questions.length) * 100
+    );
+
+    try {
+      if (user) {
+        await saveQuizScore(
+          user.uid,
+          currentQuestion.lessonId,
+          percentage
+        );
+      }
+
       setFinished(true);
+    } catch (error) {
+      console.error(
+        "Failed to save quiz score:",
+        error
+      );
+
+      setSaveError(
+        "Quiz completed, but your score could not be saved. Please try again."
+      );
+
+      setFinished(true);
+    } finally {
+      setSaving(false);
     }
   }
 
   if (finished) {
-    const percentage =
-      Math.round(
-        (score / questions.length) *
-          100
-      );
+    const percentage = Math.round(
+      (score / questions.length) * 100
+    );
 
     return (
       <div className="bg-white border rounded-2xl p-8 text-center">
@@ -98,27 +131,35 @@ export default function Quiz({
           {score} out of{" "}
           {questions.length}
         </p>
+
+        {saveError && (
+          <p className="text-red-500 text-sm mt-4">
+            {saveError}
+          </p>
+        )}
+
+        {!user && (
+          <p className="text-gray-500 text-sm mt-4">
+            Log in to save your progress.
+          </p>
+        )}
       </div>
     );
   }
 
-  const question =
-    questions[currentIndex];
-
   return (
     <div className="bg-white border rounded-2xl p-8">
       <p className="text-sm text-gray-500">
-        Question{" "}
-        {currentIndex + 1} of{" "}
+        Question {currentIndex + 1} of{" "}
         {questions.length}
       </p>
 
       <h2 className="text-2xl font-bold mt-3">
-        {question.question}
+        {currentQuestion.question}
       </h2>
 
       <div className="space-y-3 mt-6">
-        {question.options.map(
+        {currentQuestion.options.map(
           (option) => {
             const isSelected =
               selected === option;
@@ -146,11 +187,13 @@ export default function Quiz({
       <button
         type="button"
         onClick={submitAnswer}
-        disabled={!selected}
+        disabled={!selected || saving}
         className="mt-6 bg-black text-white px-6 py-3 rounded-lg disabled:opacity-40"
       >
-        {currentIndex + 1 ===
-        questions.length
+        {saving
+          ? "Saving..."
+          : currentIndex + 1 ===
+              questions.length
           ? "Finish Quiz"
           : "Next Question"}
       </button>

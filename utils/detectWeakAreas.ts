@@ -1,18 +1,19 @@
+import { lessons } from "@/data/lessons";
+
 export function detectWeakAreas(
-  quizScores: Record<
-    string,
-    number
-  >
+  quizScores: Record<string, number>
 ): string[] {
-  return Object.entries(
-    quizScores
-  )
+  return Object.entries(quizScores)
     .filter(
       ([, score]) => score < 60
     )
-    .map(
-      ([lessonId]) => lessonId
-    );
+    .map(([lessonId]) => {
+      const lesson = lessons.find(
+        (item) => item.id === lessonId
+      );
+
+      return lesson?.title || lessonId;
+    });
 }
 
 export function getPerformanceLevel(

@@ -90,9 +90,10 @@ Status: Strong
 Topic: TypeScript
 Score: 55%
 Status: Needs Improvement
+```
 
 
-📊 Progress Tracking
+### 📊 Progress Tracking
 
 The platform tracks learner progress throughout the learning journey.
 
@@ -106,7 +107,7 @@ Strong areas
 Weak areas
 Recommended topics
 
-🎯 Weak Area Detection
+### 🎯 Weak Area Detection
 The system analyzes learner performance to identify topics that require additional attention.
 
 For example:
@@ -118,7 +119,7 @@ Next.js          → Needs Improvement
 
 The identified weak areas can then be used to generate personalized recommendations.
 
-🧠 Personalized Learning Plans
+### 🧠 Personalized Learning Plans
 The system can generate learning recommendations based on:
 
 Completed lessons
@@ -139,7 +140,7 @@ AI Recommendation
        ↓
 Personalized Learning Plan
 
-🔐 Authentication
+### 🔐 Authentication
 Firebase Authentication is used to provide secure user authentication.
 
 Users can:
@@ -149,7 +150,7 @@ Log in
 Access their dashboard
 Maintain their learning progress
 
-☁️ Cloud Database
+### ☁️ Cloud Database
 Firebase Firestore can be used to store learner-related information such as:
 
 User profiles
@@ -159,7 +160,7 @@ Completed lessons
 Weak areas
 Learning history
 
-📈 Learning Dashboard
+### 📈 Learning Dashboard
 The dashboard provides a centralized view of the learner's current learning status.
 
 A typical dashboard can contain:
@@ -240,7 +241,7 @@ Git	                                       Version control
 GitHub	                                   Source code management
 
 
-🔄 How the AI Tutor Works
+### 🔄 How the AI Tutor Works
 The AI Tutor receives a learner's question and uses the AI service to generate a relevant response.
 
 Basic workflow:
@@ -267,7 +268,7 @@ Recommended topics
 
 to provide more relevant guidance.
 
-🧠 Personalized Learning Flow
+### 🧠 Personalized Learning Flow
 The personalized learning system follows this process:
 
 Learner Progress
